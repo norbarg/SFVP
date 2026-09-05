@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 
 import App from './App.jsx';
+import { SettingsProvider } from './context/SettingsContext.jsx';
 import './styles.css';
 
 const router = createBrowserRouter([
@@ -30,5 +31,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')).render(
-    <RouterProvider router={router} />,
+    <SettingsProvider>
+        <RouterProvider router={router} />
+    </SettingsProvider>,
 );

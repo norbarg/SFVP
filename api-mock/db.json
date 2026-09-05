@@ -63,6 +63,13 @@
             "countryId": 1,
             "duration": 6,
             "difficulty": "Medium"
+        },
+        {
+            "name": "Alpine Lakes Trail",
+            "countryId": 4,
+            "duration": 6,
+            "difficulty": "Medium",
+            "id": "aE9YzWkqjho"
         }
     ]
 }

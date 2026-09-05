@@ -1,5 +1,7 @@
 // react-intro/src/Pagination.jsx
 
+import { useSettings } from './context/SettingsContext.jsx';
+
 export default function Pagination({
     page,
     total,
@@ -7,6 +9,8 @@ export default function Pagination({
     onPage,
     onPerPage,
 }) {
+    const { language } = useSettings();
+
     const pages = Math.max(1, Math.ceil(total / perPage));
 
     const prev = () => {
@@ -17,11 +21,24 @@ export default function Pagination({
         onPage(Math.min(pages, page + 1));
     };
 
+    const text =
+        language === 'ua'
+            ? {
+                  prev: '← Назад',
+                  next: 'Далі →',
+                  show: 'Показувати',
+              }
+            : {
+                  prev: '← Prev',
+                  next: 'Next →',
+                  show: 'Show',
+              };
+
     return (
         <div className="pagination">
             <div className="pagination-navigation">
                 <button type="button" onClick={prev} disabled={page <= 1}>
-                    ← Prev
+                    {text.prev}
                 </button>
 
                 <span>
@@ -31,12 +48,12 @@ export default function Pagination({
                 </span>
 
                 <button type="button" onClick={next} disabled={page >= pages}>
-                    Next →
+                    {text.next}
                 </button>
             </div>
 
             <label className="per-page">
-                <span>Show</span>
+                <span>{text.show}</span>
 
                 <select
                     value={perPage}

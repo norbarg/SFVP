@@ -1,6 +1,14 @@
 // react-intro/src/Modal.jsx
 
-export default function Modal({ open, title, children, onClose, onConfirm }) {
+export default function Modal({
+    open,
+    title,
+    children,
+    onClose,
+    onConfirm,
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+}) {
     if (!open) return null;
 
     return (
@@ -18,7 +26,7 @@ export default function Modal({ open, title, children, onClose, onConfirm }) {
                         className="modal-cancel"
                         onClick={onClose}
                     >
-                        Cancel
+                        {cancelText}
                     </button>
 
                     <button
@@ -26,7 +34,7 @@ export default function Modal({ open, title, children, onClose, onConfirm }) {
                         className="modal-confirm"
                         onClick={onConfirm}
                     >
-                        Delete
+                        {confirmText}
                     </button>
                 </div>
             </div>
