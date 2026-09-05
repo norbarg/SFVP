@@ -1,0 +1,26 @@
+{
+    "todos": [
+        {
+            "id": 1,
+            "title": "Вивчити React",
+            "done": false
+        },
+        {
+            "id": 2,
+            "title": "Спробувати Vue",
+            "done": true
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "name": "Оля",
+            "email": "olya@test.com"
+        },
+        {
+            "id": 2,
+            "name": "Іван",
+            "email": "ivan@test.com"
+        }
+    ]
+}
