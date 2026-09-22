@@ -1,75 +1,76 @@
 {
-    "countries": [
-        {
-            "id": "1",
-            "name": "Iceland"
-        },
-        {
-            "id": "2",
-            "name": "Norway"
-        },
-        {
-            "id": "3",
-            "name": "Japan"
-        },
-        {
-            "id": "4",
-            "name": "Italy"
-        },
-        {
-            "id": "5",
-            "name": "Peru"
-        }
-    ],
-    "routes": [
-        {
-            "id": "1",
-            "name": "Golden Circle",
-            "countryId": 1,
-            "duration": 4,
-            "difficulty": "Easy"
-        },
-        {
-            "id": "2",
-            "name": "Fjord Echo Trail",
-            "countryId": 2,
-            "duration": 7,
-            "difficulty": "Medium"
-        },
-        {
-            "name": "Fuji Morning Route",
-            "countryId": 3,
-            "duration": 2,
-            "difficulty": "Hard",
-            "id": "3"
-        },
-        {
-            "id": "4",
-            "name": "Dolomites Escape",
-            "countryId": 4,
-            "duration": 5,
-            "difficulty": "Medium"
-        },
-        {
-            "id": "5",
-            "name": "Andes Adventure",
-            "countryId": 5,
-            "duration": 9,
-            "difficulty": "Hard"
-        },
-        {
-            "id": "6",
-            "name": "Northern Lights Road",
-            "countryId": 1,
-            "duration": 6,
-            "difficulty": "Medium"
-        },
-        {
-            "name": "Alpine Lakes Trail",
-            "countryId": 4,
-            "duration": 6,
-            "difficulty": "Medium",
-            "id": "aE9YzWkqjho"
-        }
-    ]
+  "countries": [
+    {
+      "id": "1",
+      "name": "Iceland"
+    },
+    {
+      "id": "2",
+      "name": "Norway"
+    },
+    {
+      "id": "3",
+      "name": "Japan"
+    },
+    {
+      "id": "4",
+      "name": "Italy"
+    },
+    {
+      "id": "5",
+      "name": "Peru"
+    }
+  ],
+  "routes": [
+    {
+      "id": "1",
+      "name": "Golden Circle",
+      "countryId": 1,
+      "duration": 4,
+      "difficulty": "Easy"
+    },
+    {
+      "id": "2",
+      "name": "Fjord Echo Trail",
+      "countryId": 2,
+      "duration": 7,
+      "difficulty": "Medium"
+    },
+    {
+      "name": "Fuji Morning Route",
+      "countryId": 3,
+      "duration": 2,
+      "difficulty": "Hard",
+      "id": "3"
+    },
+    {
+      "id": "4",
+      "name": "Dolomites Escape",
+      "countryId": 4,
+      "duration": 5,
+      "difficulty": "Medium"
+    },
+    {
+      "name": "Andes Adventure123",
+      "countryId": 5,
+      "duration": 9,
+      "difficulty": "Hard",
+      "id": "5"
+    },
+    {
+      "id": "6",
+      "name": "Northern Lights Road",
+      "countryId": 1,
+      "duration": 6,
+      "difficulty": "Medium"
+    },
+    {
+      "name": "Alpine Lakes Trail",
+      "countryId": 4,
+      "duration": 6,
+      "difficulty": "Medium",
+      "id": "aE9YzWkqjho"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
