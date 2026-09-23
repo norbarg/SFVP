@@ -1,13 +1,21 @@
 <script setup>
+import { computed } from 'vue';
+
+import { storeToRefs } from 'pinia';
+
+import { useSettingsStore } from '../stores/settings';
+
 const props = defineProps({
     page: {
         type: Number,
         required: true,
     },
+
     totalPages: {
         type: Number,
         required: true,
     },
+
     perPage: {
         type: Number,
         required: true,
@@ -15,6 +23,32 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['page', 'perPage']);
+
+const settings = useSettingsStore();
+
+const { language } = storeToRefs(settings);
+
+const text = computed(() => {
+    if (language.value === 'ua') {
+        return {
+            first: 'Перша',
+            prev: 'Назад',
+            page: 'Сторінка',
+            next: 'Далі',
+            last: 'Остання',
+            show: 'Показувати',
+        };
+    }
+
+    return {
+        first: 'First',
+        prev: 'Prev',
+        page: 'Page',
+        next: 'Next',
+        last: 'Last',
+        show: 'Show',
+    };
+});
 
 const goFirst = () => {
     emit('page', 1);
@@ -41,21 +75,26 @@ const changePerPage = (event) => {
     <div class="pagination">
         <div class="pagination-navigation">
             <button type="button" :disabled="page <= 1" @click="goFirst">
-                First
+                {{ text.first }}
             </button>
 
             <button type="button" :disabled="page <= 1" @click="goPrev">
-                Prev
+                {{ text.prev }}
             </button>
 
-            <span> Page {{ page }} / {{ totalPages }} </span>
+            <span>
+                {{ text.page }}
+                {{ page }}
+                /
+                {{ totalPages }}
+            </span>
 
             <button
                 type="button"
                 :disabled="page >= totalPages"
                 @click="goNext"
             >
-                Next
+                {{ text.next }}
             </button>
 
             <button
@@ -63,12 +102,14 @@ const changePerPage = (event) => {
                 :disabled="page >= totalPages"
                 @click="goLast"
             >
-                Last
+                {{ text.last }}
             </button>
         </div>
 
         <label class="per-page">
-            <span>Show</span>
+            <span>
+                {{ text.show }}
+            </span>
 
             <select :value="perPage" @change="changePerPage">
                 <option

@@ -1,6 +1,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+
+import {
+    onBeforeRouteLeave,
+    onBeforeRouteUpdate,
+    useRoute,
+    useRouter,
+} from 'vue-router';
+
+import { storeToRefs } from 'pinia';
 
 import {
     getRoutes,
@@ -11,24 +19,31 @@ import {
     getCountries,
 } from './api';
 
+import { useSettingsStore } from './stores/settings';
+
 import Modal from './components/Modal.vue';
 import Pagination from './components/Pagination.vue';
+import ConfirmLeave from './components/ConfirmLeave.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+const settings = useSettingsStore();
+
+const { theme, language, perPage, searchQ, filterCountry, sortDir } =
+    storeToRefs(settings);
 
 const routes = ref([]);
 const countries = ref([]);
 const loading = ref(true);
 
-const searchQ = ref('');
-const filterCountry = ref('');
-const sortDir = ref('asc');
-
 const page = ref(1);
-const perPage = ref(5);
 
 const formOpen = ref(false);
+
+const dirty = ref(false);
+const initialFormState = ref('');
+const discardModalOpen = ref(false);
 
 const form = reactive({
     name: '',
@@ -47,7 +62,187 @@ const errors = reactive({
 const deleteModalOpen = ref(false);
 const routeToDelete = ref(null);
 
+const selectedIds = ref(new Set());
+
+const bulkDeleteModalOpen = ref(false);
+
 const editingId = computed(() => route.params.id ?? null);
+
+const text = computed(() => {
+    if (language.value === 'ua') {
+        return {
+            addRoute: 'Додати маршрут',
+            theme: 'Змінити тему',
+            language: 'Змінити мову',
+
+            kicker: 'Щоденник подорожей / Vue 3',
+            description: 'Колекція маршрутів для допитливих мандрівників.',
+
+            search: 'Пошук маршрутів...',
+            allCountries: 'Усі країни',
+            duration: 'Тривалість',
+
+            selectPage: 'Вибрати сторінку',
+            deleteSelected: 'Видалити вибрані',
+
+            bulkDeleteTitle: 'Видалити вибрані маршрути?',
+            bulkDeleteText: 'Буде видалено маршрутів',
+            bulkDeleteWarning: 'Цю дію неможливо скасувати.',
+
+            loading: 'Завантаження маршрутів...',
+            empty: 'Маршрутів не знайдено.',
+
+            days: 'днів',
+            day: 'день',
+            difficulty: 'Складність',
+
+            edit: 'Редагувати',
+            delete: 'Видалити',
+
+            newRoute: 'Новий маршрут',
+            editRoute: 'Редагування маршруту',
+
+            newSubtitle: 'Додайте нове місце до щоденника.',
+            editSubtitle: 'Оновіть інформацію про маршрут.',
+
+            routeName: 'Назва маршруту',
+            country: 'Країна',
+            selectCountry: 'Оберіть країну...',
+            selectDifficulty: 'Оберіть...',
+
+            easy: 'Легко',
+            medium: 'Середньо',
+            hard: 'Складно',
+
+            cancel: 'Скасувати',
+            save: 'Зберегти',
+            add: 'Додати маршрут',
+
+            deleteTitle: 'Видалити маршрут?',
+            deleteText: 'Ви збираєтесь видалити',
+            deleteWarning: 'Цю дію неможливо скасувати.',
+
+            discardTitle: 'Відхилити зміни?',
+            discardText:
+                'У формі є незбережені зміни. Якщо вийти зараз, введені дані буде втрачено.',
+
+            leaveWarning: 'Є незбережені зміни. Вийти без збереження?',
+
+            nameRequired: 'Вкажіть назву маршруту',
+            countryRequired: 'Оберіть країну',
+            durationRequired: 'Тривалість повинна бути більше 0',
+            difficultyRequired: 'Оберіть складність',
+        };
+    }
+
+    return {
+        addRoute: 'Add route',
+        theme: 'Change theme',
+        language: 'Change language',
+
+        kicker: 'Travel journal / Vue 3',
+        description: 'A collection of routes for curious travelers.',
+
+        search: 'Search routes...',
+        allCountries: 'All countries',
+        duration: 'Duration',
+
+        selectPage: 'Select page',
+        deleteSelected: 'Delete selected',
+
+        bulkDeleteTitle: 'Delete selected routes?',
+        bulkDeleteText: 'Routes to be deleted',
+        bulkDeleteWarning: 'This action cannot be undone.',
+
+        loading: 'Loading routes...',
+        empty: 'No routes found.',
+
+        days: 'days',
+        day: 'day',
+        difficulty: 'Difficulty',
+
+        edit: 'Edit',
+        delete: 'Delete',
+
+        newRoute: 'New route',
+        editRoute: 'Edit route',
+
+        newSubtitle: 'Add another place to the journal.',
+        editSubtitle: 'Update your travel note.',
+
+        routeName: 'Route name',
+        country: 'Country',
+        selectCountry: 'Select country...',
+        selectDifficulty: 'Select...',
+
+        easy: 'Easy',
+        medium: 'Medium',
+        hard: 'Hard',
+
+        cancel: 'Cancel',
+        save: 'Save',
+        add: 'Add route',
+
+        deleteTitle: 'Delete route?',
+        deleteText: 'You are about to delete',
+        deleteWarning: 'This action cannot be undone.',
+
+        discardTitle: 'Discard changes?',
+        discardText:
+            'The form contains unsaved changes. If you leave now, the entered data will be lost.',
+
+        leaveWarning: 'There are unsaved changes. Leave without saving?',
+
+        nameRequired: 'Route name is required',
+        countryRequired: 'Country is required',
+        durationRequired: 'Duration must be greater than 0',
+        difficultyRequired: 'Difficulty is required',
+    };
+});
+
+const difficultyLabel = (value) => {
+    if (value === 'Easy') {
+        return text.value.easy;
+    }
+
+    if (value === 'Medium') {
+        return text.value.medium;
+    }
+
+    if (value === 'Hard') {
+        return text.value.hard;
+    }
+
+    return value;
+};
+
+const toggleTheme = () => {
+    theme.value = theme.value === 'light' ? 'dark' : 'light';
+};
+
+const toggleLanguage = () => {
+    language.value = language.value === 'en' ? 'ua' : 'en';
+};
+
+watch(
+    theme,
+    (value) => {
+        document.documentElement.dataset.theme = value;
+    },
+    {
+        immediate: true,
+    },
+);
+
+watch(
+    language,
+    (value) => {
+        document.documentElement.lang = value === 'ua' ? 'uk' : 'en';
+    },
+    {
+        immediate: true,
+    },
+);
 
 const loadData = async () => {
     loading.value = true;
@@ -77,6 +272,35 @@ const resetForm = () => {
     errors.difficulty = '';
 };
 
+const getFormState = () => {
+    return JSON.stringify({
+        name: form.name,
+        countryId: form.countryId,
+        duration: form.duration,
+        difficulty: form.difficulty,
+    });
+};
+
+const rememberFormState = () => {
+    initialFormState.value = getFormState();
+
+    dirty.value = false;
+};
+
+watch(
+    form,
+    () => {
+        if (!formOpen.value) {
+            return;
+        }
+
+        dirty.value = getFormState() !== initialFormState.value;
+    },
+    {
+        deep: true,
+    },
+);
+
 const validate = () => {
     errors.name = '';
     errors.countryId = '';
@@ -86,22 +310,26 @@ const validate = () => {
     let valid = true;
 
     if (!form.name.trim()) {
-        errors.name = 'Route name is required';
+        errors.name = text.value.nameRequired;
+
         valid = false;
     }
 
     if (!form.countryId) {
-        errors.countryId = 'Country is required';
+        errors.countryId = text.value.countryRequired;
+
         valid = false;
     }
 
     if (!form.duration || Number(form.duration) <= 0) {
-        errors.duration = 'Duration must be greater than 0';
+        errors.duration = text.value.durationRequired;
+
         valid = false;
     }
 
     if (!form.difficulty) {
-        errors.difficulty = 'Difficulty is required';
+        errors.difficulty = text.value.difficultyRequired;
+
         valid = false;
     }
 
@@ -117,8 +345,11 @@ const loadEditRoute = async () => {
         const currentRoute = await getRoute(editingId.value);
 
         form.name = currentRoute.name ?? '';
+
         form.countryId = currentRoute.countryId ?? '';
+
         form.duration = currentRoute.duration ?? '';
+
         form.difficulty = currentRoute.difficulty ?? '';
 
         errors.name = '';
@@ -127,6 +358,8 @@ const loadEditRoute = async () => {
         errors.difficulty = '';
 
         formOpen.value = true;
+
+        rememberFormState();
     } catch {
         router.replace('/routes');
     }
@@ -134,16 +367,42 @@ const loadEditRoute = async () => {
 
 const openCreateModal = () => {
     resetForm();
+
     formOpen.value = true;
+
+    rememberFormState();
 };
 
-const closeFormModal = async () => {
+const finishCloseForm = async () => {
+    dirty.value = false;
+
+    discardModalOpen.value = false;
+
     formOpen.value = false;
+
     resetForm();
 
     if (editingId.value) {
         await router.push('/routes');
     }
+};
+
+const closeFormModal = async () => {
+    if (dirty.value) {
+        discardModalOpen.value = true;
+
+        return;
+    }
+
+    await finishCloseForm();
+};
+
+const cancelDiscard = () => {
+    discardModalOpen.value = false;
+};
+
+const confirmDiscard = async () => {
+    await finishCloseForm();
 };
 
 const onSubmit = async () => {
@@ -161,12 +420,17 @@ const onSubmit = async () => {
     if (editingId.value) {
         await updateRoute(editingId.value, payload);
 
+        dirty.value = false;
+
         await router.push('/routes');
     } else {
         await createRoute(payload);
+
+        dirty.value = false;
     }
 
     formOpen.value = false;
+
     resetForm();
 
     await loadData();
@@ -178,11 +442,13 @@ const editRoute = async (routeId) => {
 
 const askDelete = (item) => {
     routeToDelete.value = item;
+
     deleteModalOpen.value = true;
 };
 
 const closeDeleteModal = () => {
     deleteModalOpen.value = false;
+
     routeToDelete.value = null;
 };
 
@@ -191,7 +457,15 @@ const confirmDelete = async () => {
         return;
     }
 
+    const deletedId = String(routeToDelete.value.id);
+
     await deleteRoute(routeToDelete.value.id);
+
+    const next = new Set(selectedIds.value);
+
+    next.delete(deletedId);
+
+    selectedIds.value = next;
 
     closeDeleteModal();
 
@@ -232,6 +506,7 @@ const filteredRoutes = computed(() => {
 const sortedRoutes = computed(() => {
     return [...filteredRoutes.value].sort((a, b) => {
         const first = Number(a.duration);
+
         const second = Number(b.duration);
 
         return sortDir.value === 'asc' ? first - second : second - first;
@@ -248,6 +523,73 @@ const pagedRoutes = computed(() => {
     return sortedRoutes.value.slice(start, start + perPage.value);
 });
 
+const pageIds = computed(() => {
+    return pagedRoutes.value.map((item) => String(item.id));
+});
+
+const allPageSelected = computed(() => {
+    return (
+        pageIds.value.length > 0 &&
+        pageIds.value.every((id) => selectedIds.value.has(id))
+    );
+});
+
+const toggleSelected = (id, checked) => {
+    const next = new Set(selectedIds.value);
+
+    const normalizedId = String(id);
+
+    if (checked) {
+        next.add(normalizedId);
+    } else {
+        next.delete(normalizedId);
+    }
+
+    selectedIds.value = next;
+};
+
+const toggleAllPage = (checked) => {
+    const next = new Set(selectedIds.value);
+
+    for (const id of pageIds.value) {
+        if (checked) {
+            next.add(id);
+        } else {
+            next.delete(id);
+        }
+    }
+
+    selectedIds.value = next;
+};
+
+const openBulkDeleteModal = () => {
+    if (selectedIds.value.size === 0) {
+        return;
+    }
+
+    bulkDeleteModalOpen.value = true;
+};
+
+const closeBulkDeleteModal = () => {
+    bulkDeleteModalOpen.value = false;
+};
+
+const confirmBulkDelete = async () => {
+    const ids = [...selectedIds.value];
+
+    if (ids.length === 0) {
+        return;
+    }
+
+    await Promise.all(ids.map((id) => deleteRoute(id)));
+
+    selectedIds.value = new Set();
+
+    closeBulkDeleteModal();
+
+    await loadData();
+};
+
 const toggleSort = () => {
     sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc';
 };
@@ -258,6 +600,7 @@ const changePage = (value) => {
 
 const changePerPage = (value) => {
     perPage.value = value;
+
     page.value = 1;
 };
 
@@ -278,12 +621,33 @@ watch(
             loadEditRoute();
         } else {
             formOpen.value = false;
+
+            dirty.value = false;
+
             resetForm();
         }
     },
 );
 
+const confirmRouteLeave = () => {
+    if (!dirty.value) {
+        return true;
+    }
+
+    return window.confirm(text.value.leaveWarning);
+};
+
+onBeforeRouteLeave(() => {
+    return confirmRouteLeave();
+});
+
+onBeforeRouteUpdate(() => {
+    return confirmRouteLeave();
+});
+
 onMounted(async () => {
+    settings.loadFromStorage();
+
     await loadData();
 
     if (editingId.value) {
@@ -299,11 +663,31 @@ onMounted(async () => {
                 <button
                     type="button"
                     class="sidebar-icon-button sidebar-add"
-                    data-tooltip="Add route"
-                    aria-label="Add route"
+                    :data-tooltip="text.addRoute"
+                    :aria-label="text.addRoute"
                     @click="openCreateModal"
                 >
                     +
+                </button>
+
+                <button
+                    type="button"
+                    class="sidebar-icon-button sidebar-theme"
+                    :data-tooltip="text.theme"
+                    :aria-label="text.theme"
+                    @click="toggleTheme"
+                >
+                    {{ theme === 'light' ? '◐' : '○' }}
+                </button>
+
+                <button
+                    type="button"
+                    class="sidebar-icon-button"
+                    :data-tooltip="text.language"
+                    :aria-label="text.language"
+                    @click="toggleLanguage"
+                >
+                    {{ language === 'en' ? 'UA' : 'EN' }}
                 </button>
             </div>
 
@@ -312,12 +696,14 @@ onMounted(async () => {
 
         <main class="atlas">
             <section class="atlas-intro">
-                <p class="atlas-kicker">Travel journal / Vue 3</p>
+                <p class="atlas-kicker">
+                    {{ text.kicker }}
+                </p>
 
                 <h1 class="atlas-title">ATLAS.</h1>
 
                 <p class="atlas-description">
-                    A collection of routes for curious travelers.
+                    {{ text.description }}
                 </p>
             </section>
 
@@ -326,12 +712,14 @@ onMounted(async () => {
                     <input
                         v-model="searchQ"
                         type="text"
-                        placeholder="Search routes..."
+                        :placeholder="text.search"
                     />
                 </div>
 
                 <select v-model="filterCountry">
-                    <option value="">All countries</option>
+                    <option value="">
+                        {{ text.allCountries }}
+                    </option>
 
                     <option
                         v-for="country in countries"
@@ -343,19 +731,65 @@ onMounted(async () => {
                 </select>
 
                 <button type="button" class="sort-button" @click="toggleSort">
-                    Duration
+                    {{ text.duration }}
+
                     {{ sortDir === 'asc' ? '↑' : '↓' }}
                 </button>
             </section>
 
-            <p v-if="loading" class="loading">Loading routes...</p>
+            <div class="bulk-actions">
+                <label class="select-page">
+                    <input
+                        type="checkbox"
+                        :checked="allPageSelected"
+                        @change="toggleAllPage($event.target.checked)"
+                    />
+
+                    <span>
+                        {{ text.selectPage }}
+                    </span>
+                </label>
+
+                <button
+                    type="button"
+                    class="bulk-delete"
+                    :disabled="selectedIds.size === 0"
+                    @click="openBulkDeleteModal"
+                >
+                    {{ text.deleteSelected }}
+                    ({{ selectedIds.size }})
+                </button>
+            </div>
+
+            <p v-if="loading" class="loading">
+                {{ text.loading }}
+            </p>
 
             <section v-else class="routes-grid">
                 <article
                     v-for="(item, index) in pagedRoutes"
                     :key="item.id"
-                    class="route-card"
+                    :class="[
+                        'route-card',
+                        {
+                            'route-card-selected': selectedIds.has(
+                                String(item.id),
+                            ),
+                        },
+                    ]"
                 >
+                    <label class="route-checkbox">
+                        <input
+                            type="checkbox"
+                            :checked="selectedIds.has(String(item.id))"
+                            @change="
+                                toggleSelected(item.id, $event.target.checked)
+                            "
+                        />
+
+                        <span></span>
+                    </label>
+
                     <div class="route-number">
                         {{
                             String((page - 1) * perPage + index + 1).padStart(
@@ -375,42 +809,49 @@ onMounted(async () => {
 
                     <div class="route-meta">
                         <div>
-                            <span>Duration</span>
+                            <span>
+                                {{ text.duration }}
+                            </span>
 
                             <strong>
                                 {{ item.duration }}
+
                                 {{
-                                    Number(item.duration) === 1 ? 'day' : 'days'
+                                    Number(item.duration) === 1
+                                        ? text.day
+                                        : text.days
                                 }}
                             </strong>
                         </div>
 
                         <div>
-                            <span>Difficulty</span>
+                            <span>
+                                {{ text.difficulty }}
+                            </span>
 
                             <strong
                                 class="difficulty"
                                 :class="`difficulty-${item.difficulty.toLowerCase()}`"
                             >
-                                {{ item.difficulty }}
+                                {{ difficultyLabel(item.difficulty) }}
                             </strong>
                         </div>
                     </div>
 
                     <div class="route-actions">
                         <button type="button" @click="editRoute(item.id)">
-                            Edit
+                            {{ text.edit }}
                         </button>
 
                         <button type="button" @click="askDelete(item)">
-                            Delete
+                            {{ text.delete }}
                         </button>
                     </div>
                 </article>
             </section>
 
             <p v-if="!loading && pagedRoutes.length === 0" class="empty-state">
-                No routes found.
+                {{ text.empty }}
             </p>
 
             <Pagination
@@ -422,17 +863,20 @@ onMounted(async () => {
             />
         </main>
 
+        <ConfirmLeave :enabled="dirty && formOpen" />
+
         <div v-if="formOpen" class="modal-backdrop" @click="closeFormModal">
             <div class="route-editor-modal" @click.stop>
                 <div class="route-editor-top">
                     <div>
                         <div class="modal-mark">
                             ATLAS /
+
                             {{ editingId ? 'EDIT' : 'NEW' }}
                         </div>
 
                         <h3>
-                            {{ editingId ? 'Edit route' : 'New route' }}
+                            {{ editingId ? text.editRoute : text.newRoute }}
                         </h3>
                     </div>
 
@@ -446,21 +890,21 @@ onMounted(async () => {
                 </div>
 
                 <p class="route-editor-subtitle">
-                    {{
-                        editingId
-                            ? 'Update your travel note.'
-                            : 'Add another place to the journal.'
-                    }}
+                    {{ editingId ? text.editSubtitle : text.newSubtitle }}
                 </p>
 
                 <form class="route-editor-form" @submit.prevent="onSubmit">
                     <div class="field">
-                        <label> Route name </label>
+                        <label>
+                            {{ text.routeName }}
+                        </label>
 
                         <input
                             v-model="form.name"
                             type="text"
-                            placeholder="Fjord Echo Trail"
+                            placeholder="
+                                Fjord Echo Trail
+                            "
                         />
 
                         <span v-if="errors.name" class="error">
@@ -469,10 +913,14 @@ onMounted(async () => {
                     </div>
 
                     <div class="field">
-                        <label> Country </label>
+                        <label>
+                            {{ text.country }}
+                        </label>
 
                         <select v-model="form.countryId">
-                            <option value="">Select country...</option>
+                            <option value="">
+                                {{ text.selectCountry }}
+                            </option>
 
                             <option
                                 v-for="country in countries"
@@ -490,7 +938,9 @@ onMounted(async () => {
 
                     <div class="route-editor-row">
                         <div class="field">
-                            <label> Duration </label>
+                            <label>
+                                {{ text.duration }}
+                            </label>
 
                             <input
                                 v-model="form.duration"
@@ -505,16 +955,26 @@ onMounted(async () => {
                         </div>
 
                         <div class="field">
-                            <label> Difficulty </label>
+                            <label>
+                                {{ text.difficulty }}
+                            </label>
 
                             <select v-model="form.difficulty">
-                                <option value="">Select...</option>
+                                <option value="">
+                                    {{ text.selectDifficulty }}
+                                </option>
 
-                                <option value="Easy">Easy</option>
+                                <option value="Easy">
+                                    {{ text.easy }}
+                                </option>
 
-                                <option value="Medium">Medium</option>
+                                <option value="Medium">
+                                    {{ text.medium }}
+                                </option>
 
-                                <option value="Hard">Hard</option>
+                                <option value="Hard">
+                                    {{ text.hard }}
+                                </option>
                             </select>
 
                             <span v-if="errors.difficulty" class="error">
@@ -529,11 +989,11 @@ onMounted(async () => {
                             class="cancel-button"
                             @click="closeFormModal"
                         >
-                            Cancel
+                            {{ text.cancel }}
                         </button>
 
                         <button type="submit" class="save-button">
-                            {{ editingId ? 'Save' : 'Add route' }}
+                            {{ editingId ? text.save : text.add }}
                         </button>
                     </div>
                 </form>
@@ -542,16 +1002,43 @@ onMounted(async () => {
 
         <Modal
             :open="deleteModalOpen"
-            title="Delete route?"
+            :title="text.deleteTitle"
             @close="closeDeleteModal"
             @confirm="confirmDelete"
         >
             <template v-if="routeToDelete">
-                You are about to delete
+                {{ text.deleteText }}
+
                 <strong>
                     {{ routeToDelete.name }} </strong
-                >. This action cannot be undone.
+                >.
+
+                {{ text.deleteWarning }}
             </template>
+        </Modal>
+
+        <Modal
+            :open="bulkDeleteModalOpen"
+            :title="text.bulkDeleteTitle"
+            @close="closeBulkDeleteModal"
+            @confirm="confirmBulkDelete"
+        >
+            {{ text.bulkDeleteText }}:
+
+            <strong>
+                {{ selectedIds.size }} </strong
+            >.
+
+            {{ text.bulkDeleteWarning }}
+        </Modal>
+
+        <Modal
+            :open="discardModalOpen"
+            :title="text.discardTitle"
+            @close="cancelDiscard"
+            @confirm="confirmDiscard"
+        >
+            {{ text.discardText }}
         </Modal>
     </div>
 </template>
