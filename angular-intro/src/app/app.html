@@ -1,1 +1,37 @@
-<router-outlet></router-outlet>
+<div class="app-shell">
+    <button
+        type="button"
+        class="global-theme-button"
+        [attr.aria-label]="
+            theme.theme() === 'light'
+                ? 'Enable dark theme'
+                : 'Enable light theme'
+        "
+        (click)="toggleTheme()"
+    >
+        {{
+            theme.theme() === 'light'
+                ? '◐'
+                : '○'
+        }}
+    </button>
+
+    <button
+        type="button"
+        class="global-language-button"
+        [attr.aria-label]="
+            language.language() === 'en'
+                ? 'Українська'
+                : 'English'
+        "
+        (click)="toggleLanguage()"
+    >
+        {{
+            language.language() === 'en'
+                ? 'UA'
+                : 'EN'
+        }}
+    </button>
+
+    <router-outlet></router-outlet>
+</div>

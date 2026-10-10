@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+
 import {
     Component,
     EventEmitter,
@@ -8,25 +9,62 @@ import {
 
 @Component({
     selector: 'app-pagination',
+
     standalone: true,
-    imports: [CommonModule],
+
+    imports: [
+        CommonModule,
+    ],
+
     templateUrl: './pagination.html',
     styleUrl: './pagination.css',
 })
 export class Pagination {
     @Input() page = 1;
+
     @Input() perPage = 5;
+
     @Input() total = 0;
 
-    @Output() pageChange = new EventEmitter<number>();
-    @Output() perPageChange = new EventEmitter<number>();
+    @Input() firstText =
+        'First';
 
-    perPageOptions = [5, 10, 20, 50, 100];
+    @Input() prevText =
+        'Prev';
+
+    @Input() nextText =
+        'Next';
+
+    @Input() lastText =
+        'Last';
+
+    @Input() pageText =
+        'Page';
+
+    @Input() showText =
+        'Show';
+
+    @Output() pageChange =
+        new EventEmitter<number>();
+
+    @Output() perPageChange =
+        new EventEmitter<number>();
+
+    perPageOptions = [
+        5,
+        10,
+        20,
+        50,
+        100,
+    ];
 
     get totalPages(): number {
         return Math.max(
             1,
-            Math.ceil(this.total / this.perPage),
+            Math.ceil(
+                this.total /
+                this.perPage,
+            ),
         );
     }
 
@@ -36,7 +74,10 @@ export class Pagination {
 
     prev(): void {
         this.pageChange.emit(
-            Math.max(1, this.page - 1),
+            Math.max(
+                1,
+                this.page - 1,
+            ),
         );
     }
 
@@ -50,15 +91,21 @@ export class Pagination {
     }
 
     last(): void {
-        this.pageChange.emit(this.totalPages);
+        this.pageChange.emit(
+            this.totalPages,
+        );
     }
 
-    changePerPage(event: Event): void {
+    changePerPage(
+        event: Event,
+    ): void {
         const select =
             event.target as HTMLSelectElement;
 
         this.perPageChange.emit(
-            Number(select.value),
+            Number(
+                select.value,
+            ),
         );
     }
 }

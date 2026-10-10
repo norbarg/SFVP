@@ -22,7 +22,7 @@
                 class="modal-cancel"
                 (click)="close.emit()"
             >
-                Cancel
+                {{ cancelText }}
             </button>
 
             <button
@@ -30,7 +30,7 @@
                 class="modal-confirm"
                 (click)="confirm.emit()"
             >
-                Confirm
+                {{ confirmText }}
             </button>
         </div>
     </div>

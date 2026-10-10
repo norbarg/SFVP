@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+
 import {
     Component,
     EventEmitter,
@@ -8,20 +9,40 @@ import {
 
 @Component({
     selector: 'app-modal',
+
     standalone: true,
-    imports: [CommonModule],
+
+    imports: [
+        CommonModule,
+    ],
+
     templateUrl: './modal.html',
     styleUrl: './modal.css',
 })
 export class Modal {
     @Input() open = false;
+
     @Input() title = '';
 
-    @Output() close = new EventEmitter<void>();
-    @Output() confirm = new EventEmitter<void>();
+    @Input() confirmText =
+        'Confirm';
 
-    closeOnBackdrop(event: MouseEvent): void {
-        if (event.target === event.currentTarget) {
+    @Input() cancelText =
+        'Cancel';
+
+    @Output() close =
+        new EventEmitter<void>();
+
+    @Output() confirm =
+        new EventEmitter<void>();
+
+    closeOnBackdrop(
+        event: MouseEvent,
+    ): void {
+        if (
+            event.target ===
+            event.currentTarget
+        ) {
             this.close.emit();
         }
     }

@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 
-import { Routes as RoutesPage } from './pages/routes/routes';
+import {
+    Routes as RoutesPage,
+    canDeactivateEdit,
+} from './pages/routes/routes';
 
 export const routes: Routes = [
     {
@@ -17,6 +20,10 @@ export const routes: Routes = [
     {
         path: 'routes/:id/edit',
         component: RoutesPage,
+
+        canDeactivate: [
+            canDeactivateEdit,
+        ],
     },
 
     {

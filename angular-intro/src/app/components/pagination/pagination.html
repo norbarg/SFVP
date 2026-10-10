@@ -5,7 +5,7 @@
             [disabled]="page <= 1"
             (click)="first()"
         >
-            First
+            {{ firstText }}
         </button>
 
         <button
@@ -13,11 +13,14 @@
             [disabled]="page <= 1"
             (click)="prev()"
         >
-            Prev
+            {{ prevText }}
         </button>
 
         <span>
-            Page {{ page }} / {{ totalPages }}
+            {{ pageText }}
+            {{ page }}
+            /
+            {{ totalPages }}
         </span>
 
         <button
@@ -25,7 +28,7 @@
             [disabled]="page >= totalPages"
             (click)="next()"
         >
-            Next
+            {{ nextText }}
         </button>
 
         <button
@@ -33,12 +36,14 @@
             [disabled]="page >= totalPages"
             (click)="last()"
         >
-            Last
+            {{ lastText }}
         </button>
     </div>
 
     <label class="per-page">
-        <span>Show</span>
+        <span>
+            {{ showText }}
+        </span>
 
         <select
             [value]="perPage"
@@ -47,6 +52,7 @@
             <option
                 *ngFor="let number of perPageOptions"
                 [value]="number"
+                [selected]="number === perPage"
             >
                 {{ number }}
             </option>

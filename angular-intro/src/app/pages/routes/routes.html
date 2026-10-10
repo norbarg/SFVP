@@ -4,8 +4,8 @@
             <button
                 type="button"
                 class="sidebar-icon-button sidebar-add"
-                data-tooltip="Add route"
-                aria-label="Add route"
+                [attr.data-tooltip]="t.addTooltip"
+                [attr.aria-label]="t.addTooltip"
                 (click)="openCreateForm()"
             >
                 +
@@ -20,7 +20,7 @@
     <main class="atlas">
         <section class="atlas-intro">
             <p class="atlas-kicker">
-                Travel journal / Angular
+                {{ t.kicker }}
             </p>
 
             <h1 class="atlas-title">
@@ -28,7 +28,7 @@
             </h1>
 
             <p class="atlas-description">
-                A collection of routes for curious travelers.
+                {{ t.description }}
             </p>
         </section>
 
@@ -36,7 +36,7 @@
             <div class="search-box">
                 <input
                     type="text"
-                    placeholder="Search routes..."
+                    [placeholder]="t.searchPlaceholder"
                     [value]="searchQ"
                     (input)="onSearch($event)"
                 />
@@ -47,7 +47,7 @@
                 (change)="onCountryChange($event)"
             >
                 <option value="">
-                    All countries
+                    {{ t.allCountries }}
                 </option>
 
                 <option
@@ -63,8 +63,45 @@
                 class="sort-button"
                 (click)="toggleSort()"
             >
-                Duration
+                {{ t.duration }}
+
                 {{ sortDir === 'asc' ? '↑' : '↓' }}
+            </button>
+        </section>
+
+        <section
+            *ngIf="!loading"
+            class="bulk-actions"
+        >
+            <label class="select-page">
+                <input
+                    type="checkbox"
+                    [checked]="allPageSelected"
+                    (change)="togglePage($event)"
+                />
+
+                <span>
+                    {{ t.selectPage }}
+                </span>
+            </label>
+
+            <button
+                type="button"
+                class="bulk-delete"
+                [disabled]="
+                    selectedCount === 0 ||
+                    bulkDeleting
+                "
+                (click)="askBulkDelete()"
+            >
+                {{
+                    bulkDeleting
+                        ? t.loading
+                        : t.deleteSelected +
+                          ' (' +
+                          selectedCount +
+                          ')'
+                }}
             </button>
         </section>
 
@@ -72,7 +109,7 @@
             *ngIf="loading"
             class="loading"
         >
-            Loading routes...
+            {{ t.loading }}
         </p>
 
         <section
@@ -85,7 +122,24 @@
                     let index = index
                 "
                 class="route-card"
+                [class.route-card-selected]="
+                    isSelected(item.id)
+                "
             >
+                <label
+                    *ngIf="item.id !== undefined"
+                    class="route-checkbox"
+                    aria-label="Select route"
+                >
+                    <input
+                        type="checkbox"
+                        [checked]="isSelected(item.id)"
+                        (change)="toggleOne(item, $event)"
+                    />
+
+                    <span></span>
+                </label>
+
                 <div class="route-number">
                     {{
                         (
@@ -95,7 +149,10 @@
                             1
                         )
                             .toString()
-                            .padStart(2, '0')
+                            .padStart(
+                                2,
+                                '0'
+                            )
                     }}
                 </div>
 
@@ -110,22 +167,23 @@
                 <div class="route-meta">
                     <div>
                         <span>
-                            Duration
+                            {{ t.duration }}
                         </span>
 
                         <strong>
                             {{ item.duration }}
+
                             {{
                                 item.duration === 1
-                                    ? 'day'
-                                    : 'days'
+                                    ? t.day
+                                    : t.days
                             }}
                         </strong>
                     </div>
 
                     <div>
                         <span>
-                            Difficulty
+                            {{ t.difficulty }}
                         </span>
 
                         <strong
@@ -135,7 +193,11 @@
                                 item.difficulty.toLowerCase()
                             "
                         >
-                            {{ item.difficulty }}
+                            {{
+                                difficultyLabel(
+                                    item.difficulty
+                                )
+                            }}
                         </strong>
                     </div>
                 </div>
@@ -145,14 +207,14 @@
                         type="button"
                         (click)="editRoute(item.id)"
                     >
-                        Edit
+                        {{ t.edit }}
                     </button>
 
                     <button
                         type="button"
                         (click)="askDelete(item)"
                     >
-                        Delete
+                        {{ t.delete }}
                     </button>
                 </div>
             </article>
@@ -165,13 +227,21 @@
             "
             class="empty-state"
         >
-            No routes found.
+            {{ t.noRoutes }}
         </p>
 
         <app-pagination
             [page]="page"
             [perPage]="perPage"
             [total]="sortedRoutes.length"
+
+            [firstText]="t.first"
+            [prevText]="t.prev"
+            [nextText]="t.next"
+            [lastText]="t.last"
+            [pageText]="t.page"
+            [showText]="t.show"
+
             (pageChange)="changePage($event)"
             (perPageChange)="changePerPage($event)"
         ></app-pagination>
@@ -180,7 +250,7 @@
     <div
         *ngIf="formOpen"
         class="modal-backdrop"
-        (click)="closeForm()"
+        (click)="requestCloseForm()"
     >
         <div
             class="route-editor-modal"
@@ -190,18 +260,19 @@
                 <div>
                     <div class="modal-mark">
                         ATLAS /
+
                         {{
                             editingId
-                                ? 'EDIT'
-                                : 'NEW'
+                                ? t.editMark
+                                : t.newMark
                         }}
                     </div>
 
                     <h3>
                         {{
                             editingId
-                                ? 'Edit route'
-                                : 'New route'
+                                ? t.editRoute
+                                : t.newRoute
                         }}
                     </h3>
                 </div>
@@ -209,7 +280,7 @@
                 <button
                     type="button"
                     class="editor-close"
-                    (click)="closeForm()"
+                    (click)="requestCloseForm()"
                 >
                     ×
                 </button>
@@ -218,8 +289,8 @@
             <p class="route-editor-subtitle">
                 {{
                     editingId
-                        ? 'Update your travel note.'
-                        : 'Add another place to the journal.'
+                        ? t.editSubtitle
+                        : t.newSubtitle
                 }}
             </p>
 
@@ -230,13 +301,13 @@
             >
                 <div class="field">
                     <label>
-                        Route name
+                        {{ t.routeName }}
                     </label>
 
                     <input
                         type="text"
                         formControlName="name"
-                        placeholder="Fjord Echo Trail"
+                        [placeholder]="t.routePlaceholder"
                     />
 
                     <span
@@ -246,20 +317,20 @@
                         "
                         class="error"
                     >
-                        Route name is required
+                        {{ t.validationName }}
                     </span>
                 </div>
 
                 <div class="field">
                     <label>
-                        Country
+                        {{ t.country }}
                     </label>
 
                     <select
                         formControlName="countryId"
                     >
                         <option value="">
-                            Select country...
+                            {{ t.selectCountry }}
                         </option>
 
                         <option
@@ -277,14 +348,14 @@
                         "
                         class="error"
                     >
-                        Country is required
+                        {{ t.validationCountry }}
                     </span>
                 </div>
 
                 <div class="route-editor-row">
                     <div class="field">
                         <label>
-                            Duration
+                            {{ t.duration }}
                         </label>
 
                         <input
@@ -300,32 +371,32 @@
                             "
                             class="error"
                         >
-                            Duration must be greater than 0
+                            {{ t.validationDuration }}
                         </span>
                     </div>
 
                     <div class="field">
                         <label>
-                            Difficulty
+                            {{ t.difficulty }}
                         </label>
 
                         <select
                             formControlName="difficulty"
                         >
                             <option value="">
-                                Select...
+                                {{ t.select }}
                             </option>
 
                             <option value="Easy">
-                                Easy
+                                {{ t.easy }}
                             </option>
 
                             <option value="Medium">
-                                Medium
+                                {{ t.medium }}
                             </option>
 
                             <option value="Hard">
-                                Hard
+                                {{ t.hard }}
                             </option>
                         </select>
 
@@ -336,7 +407,7 @@
                             "
                             class="error"
                         >
-                            Difficulty is required
+                            {{ t.validationDifficulty }}
                         </span>
                     </div>
                 </div>
@@ -345,9 +416,9 @@
                     <button
                         type="button"
                         class="cancel-button"
-                        (click)="closeForm()"
+                        (click)="requestCloseForm()"
                     >
-                        Cancel
+                        {{ t.cancel }}
                     </button>
 
                     <button
@@ -357,10 +428,10 @@
                     >
                         {{
                             saving
-                                ? 'Saving...'
+                                ? t.saving
                                 : editingId
-                                  ? 'Save'
-                                  : 'Add route'
+                                    ? t.save
+                                    : t.addRoute
                         }}
                     </button>
                 </div>
@@ -370,18 +441,56 @@
 
     <app-modal
         [open]="deleteModalOpen"
-        title="Delete route?"
+        [title]="t.deleteTitle"
+        [cancelText]="t.cancel"
+        [confirmText]="t.delete"
         (close)="closeDeleteModal()"
         (confirm)="confirmDelete()"
     >
-        <ng-container *ngIf="routeToDelete">
-            You are about to delete
+        <ng-container
+            *ngIf="routeToDelete"
+        >
+            {{ t.deleteStart }}
 
             <strong>
                 {{ routeToDelete.name }}
             </strong>.
 
-            This action cannot be undone.
+            {{ t.cannotUndo }}
         </ng-container>
+    </app-modal>
+
+    <app-modal
+        [open]="bulkDeleteModalOpen"
+        [title]="t.bulkTitle"
+        [cancelText]="t.cancel"
+        [confirmText]="t.delete"
+        (close)="closeBulkDeleteModal()"
+        (confirm)="confirmBulkDelete()"
+    >
+        {{ t.bulkStart }}
+
+        <strong>
+            {{ selectedCount }}
+        </strong>
+
+        {{
+            selectedCount === 1
+                ? t.selectedRoute
+                : t.selectedRoutes
+        }}.
+
+        {{ t.cannotUndo }}
+    </app-modal>
+
+    <app-modal
+        [open]="leaveModalOpen"
+        [title]="t.discardTitle"
+        [cancelText]="t.cancel"
+        [confirmText]="t.discard"
+        (close)="cancelDiscard()"
+        (confirm)="confirmDiscard()"
+    >
+        {{ t.discardText }}
     </app-modal>
 </div>
