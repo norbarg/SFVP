@@ -1,0 +1,37 @@
+<div
+    *ngIf="open"
+    class="modal-backdrop"
+    (click)="closeOnBackdrop($event)"
+>
+    <div class="modal-dialog">
+        <div class="modal-mark">
+            ATLAS / CONFIRM
+        </div>
+
+        <h3>
+            {{ title }}
+        </h3>
+
+        <div class="modal-content">
+            <ng-content></ng-content>
+        </div>
+
+        <div class="modal-actions">
+            <button
+                type="button"
+                class="modal-cancel"
+                (click)="close.emit()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="modal-confirm"
+                (click)="confirm.emit()"
+            >
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>

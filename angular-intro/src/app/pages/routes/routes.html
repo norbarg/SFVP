@@ -1,0 +1,387 @@
+<div class="atlas-layout">
+    <aside class="atlas-sidebar">
+        <div class="sidebar-actions">
+            <button
+                type="button"
+                class="sidebar-icon-button sidebar-add"
+                data-tooltip="Add route"
+                aria-label="Add route"
+                (click)="openCreateForm()"
+            >
+                +
+            </button>
+        </div>
+
+        <div class="sidebar-mini-mark">
+            A
+        </div>
+    </aside>
+
+    <main class="atlas">
+        <section class="atlas-intro">
+            <p class="atlas-kicker">
+                Travel journal / Angular
+            </p>
+
+            <h1 class="atlas-title">
+                ATLAS.
+            </h1>
+
+            <p class="atlas-description">
+                A collection of routes for curious travelers.
+            </p>
+        </section>
+
+        <section class="atlas-controls">
+            <div class="search-box">
+                <input
+                    type="text"
+                    placeholder="Search routes..."
+                    [value]="searchQ"
+                    (input)="onSearch($event)"
+                />
+            </div>
+
+            <select
+                [value]="filterCountry"
+                (change)="onCountryChange($event)"
+            >
+                <option value="">
+                    All countries
+                </option>
+
+                <option
+                    *ngFor="let country of countries"
+                    [value]="country.id"
+                >
+                    {{ country.name }}
+                </option>
+            </select>
+
+            <button
+                type="button"
+                class="sort-button"
+                (click)="toggleSort()"
+            >
+                Duration
+                {{ sortDir === 'asc' ? '↑' : '↓' }}
+            </button>
+        </section>
+
+        <p
+            *ngIf="loading"
+            class="loading"
+        >
+            Loading routes...
+        </p>
+
+        <section
+            *ngIf="!loading"
+            class="routes-grid"
+        >
+            <article
+                *ngFor="
+                    let item of pagedRoutes;
+                    let index = index
+                "
+                class="route-card"
+            >
+                <div class="route-number">
+                    {{
+                        (
+                            (page - 1) *
+                                perPage +
+                            index +
+                            1
+                        )
+                            .toString()
+                            .padStart(2, '0')
+                    }}
+                </div>
+
+                <p class="route-country">
+                    {{ item.countryName }}
+                </p>
+
+                <h2>
+                    {{ item.name }}
+                </h2>
+
+                <div class="route-meta">
+                    <div>
+                        <span>
+                            Duration
+                        </span>
+
+                        <strong>
+                            {{ item.duration }}
+                            {{
+                                item.duration === 1
+                                    ? 'day'
+                                    : 'days'
+                            }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>
+                            Difficulty
+                        </span>
+
+                        <strong
+                            class="difficulty"
+                            [ngClass]="
+                                'difficulty-' +
+                                item.difficulty.toLowerCase()
+                            "
+                        >
+                            {{ item.difficulty }}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="route-actions">
+                    <button
+                        type="button"
+                        (click)="editRoute(item.id)"
+                    >
+                        Edit
+                    </button>
+
+                    <button
+                        type="button"
+                        (click)="askDelete(item)"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </article>
+        </section>
+
+        <p
+            *ngIf="
+                !loading &&
+                pagedRoutes.length === 0
+            "
+            class="empty-state"
+        >
+            No routes found.
+        </p>
+
+        <app-pagination
+            [page]="page"
+            [perPage]="perPage"
+            [total]="sortedRoutes.length"
+            (pageChange)="changePage($event)"
+            (perPageChange)="changePerPage($event)"
+        ></app-pagination>
+    </main>
+
+    <div
+        *ngIf="formOpen"
+        class="modal-backdrop"
+        (click)="closeForm()"
+    >
+        <div
+            class="route-editor-modal"
+            (click)="$event.stopPropagation()"
+        >
+            <div class="route-editor-top">
+                <div>
+                    <div class="modal-mark">
+                        ATLAS /
+                        {{
+                            editingId
+                                ? 'EDIT'
+                                : 'NEW'
+                        }}
+                    </div>
+
+                    <h3>
+                        {{
+                            editingId
+                                ? 'Edit route'
+                                : 'New route'
+                        }}
+                    </h3>
+                </div>
+
+                <button
+                    type="button"
+                    class="editor-close"
+                    (click)="closeForm()"
+                >
+                    ×
+                </button>
+            </div>
+
+            <p class="route-editor-subtitle">
+                {{
+                    editingId
+                        ? 'Update your travel note.'
+                        : 'Add another place to the journal.'
+                }}
+            </p>
+
+            <form
+                class="route-editor-form"
+                [formGroup]="form"
+                (ngSubmit)="submitForm()"
+            >
+                <div class="field">
+                    <label>
+                        Route name
+                    </label>
+
+                    <input
+                        type="text"
+                        formControlName="name"
+                        placeholder="Fjord Echo Trail"
+                    />
+
+                    <span
+                        *ngIf="
+                            form.controls.name.touched &&
+                            form.controls.name.invalid
+                        "
+                        class="error"
+                    >
+                        Route name is required
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label>
+                        Country
+                    </label>
+
+                    <select
+                        formControlName="countryId"
+                    >
+                        <option value="">
+                            Select country...
+                        </option>
+
+                        <option
+                            *ngFor="let country of countries"
+                            [value]="country.id"
+                        >
+                            {{ country.name }}
+                        </option>
+                    </select>
+
+                    <span
+                        *ngIf="
+                            form.controls.countryId.touched &&
+                            form.controls.countryId.invalid
+                        "
+                        class="error"
+                    >
+                        Country is required
+                    </span>
+                </div>
+
+                <div class="route-editor-row">
+                    <div class="field">
+                        <label>
+                            Duration
+                        </label>
+
+                        <input
+                            type="number"
+                            min="1"
+                            formControlName="duration"
+                        />
+
+                        <span
+                            *ngIf="
+                                form.controls.duration.touched &&
+                                form.controls.duration.invalid
+                            "
+                            class="error"
+                        >
+                            Duration must be greater than 0
+                        </span>
+                    </div>
+
+                    <div class="field">
+                        <label>
+                            Difficulty
+                        </label>
+
+                        <select
+                            formControlName="difficulty"
+                        >
+                            <option value="">
+                                Select...
+                            </option>
+
+                            <option value="Easy">
+                                Easy
+                            </option>
+
+                            <option value="Medium">
+                                Medium
+                            </option>
+
+                            <option value="Hard">
+                                Hard
+                            </option>
+                        </select>
+
+                        <span
+                            *ngIf="
+                                form.controls.difficulty.touched &&
+                                form.controls.difficulty.invalid
+                            "
+                            class="error"
+                        >
+                            Difficulty is required
+                        </span>
+                    </div>
+                </div>
+
+                <div class="route-editor-actions">
+                    <button
+                        type="button"
+                        class="cancel-button"
+                        (click)="closeForm()"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="save-button"
+                        [disabled]="saving"
+                    >
+                        {{
+                            saving
+                                ? 'Saving...'
+                                : editingId
+                                  ? 'Save'
+                                  : 'Add route'
+                        }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <app-modal
+        [open]="deleteModalOpen"
+        title="Delete route?"
+        (close)="closeDeleteModal()"
+        (confirm)="confirmDelete()"
+    >
+        <ng-container *ngIf="routeToDelete">
+            You are about to delete
+
+            <strong>
+                {{ routeToDelete.name }}
+            </strong>.
+
+            This action cannot be undone.
+        </ng-container>
+    </app-modal>
+</div>
