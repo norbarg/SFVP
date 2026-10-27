@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / {{ route.name }}{% endblock %}
+
+{% block body %}
+    <section class="page-header">
+        <div class="eyebrow">
+            ATLAS / ROUTE
+        </div>
+
+        <h1 class="page-title">
+            {{ route.name }}
+        </h1>
+
+        <p class="page-description">
+            Route details from the ATLAS travel collection.
+        </p>
+    </section>
+
+    <div class="detail-card">
+        <div class="detail-row">
+            <div class="detail-label">
+                ID
+            </div>
+
+            <div class="detail-value">
+                {{ route.id }}
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">
+                Country
+            </div>
+
+            <div class="detail-value">
+                {{ route.country.name }}
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">
+                Duration
+            </div>
+
+            <div class="detail-value">
+                {{ route.duration }} days
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">
+                Difficulty
+            </div>
+
+            <div class="detail-value">
+                {{ route.difficulty }}
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <a
+            href="{{ path('app_route_index') }}"
+            class="btn"
+        >
+            ← Back
+        </a>
+
+        <a
+            href="{{ path('app_route_edit', {'id': route.id}) }}"
+            class="btn btn-dark"
+        >
+            Edit
+        </a>
+
+        {{ include('route/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

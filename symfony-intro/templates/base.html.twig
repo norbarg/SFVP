@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}ATLAS{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+</head>
+
+<body>
+    <div class="atlas-layout">
+
+        <aside class="atlas-sidebar">
+            <div class="sidebar-actions">
+
+                <a
+                    href="{{ path('app_route_new') }}"
+                    class="sidebar-icon-button sidebar-add"
+                    data-tooltip="New route"
+                >
+                    +
+                </a>
+
+                <a
+                    href="{{ path('app_route_index') }}"
+                    class="sidebar-icon-button"
+                    data-tooltip="Routes"
+                >
+                    R
+                </a>
+
+                <a
+                    href="{{ path('app_country_index') }}"
+                    class="sidebar-icon-button"
+                    data-tooltip="Countries"
+                >
+                    C
+                </a>
+            </div>
+
+            <div class="sidebar-actions">
+
+                <button
+                    type="button"
+                    class="sidebar-icon-button"
+                    id="themeToggle"
+                    data-tooltip="Theme"
+                >
+                    ☾
+                </button>
+
+                <button
+                    type="button"
+                    class="sidebar-icon-button"
+                    id="languageToggle"
+                    data-tooltip="Language"
+                >
+                    UA
+                </button>
+
+                <div class="sidebar-mini-mark">
+                    A
+                </div>
+            </div>
+        </aside>
+
+        <main class="atlas">
+            {% block body %}{% endblock %}
+        </main>
+
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                kicker: 'Curated travel routes',
+                description: 'A small collection of routes for curious travelers.',
+
+                search: 'Search routes...',
+                allCountries: 'All countries',
+
+                find: 'Search',
+                reset: 'Reset',
+                newRoute: 'New route',
+                countries: 'Countries',
+
+                duration: 'Duration',
+                difficulty: 'Difficulty',
+
+                edit: 'Edit',
+                delete: 'Delete',
+
+                selectPage: 'Select page',
+                deleteSelected: 'Delete selected',
+
+                noRoutes: 'No routes found.',
+
+                prev: '← Prev',
+                next: 'Next →',
+
+                show: 'Show'
+            },
+
+            uk: {
+                kicker: 'Добірка туристичних маршрутів',
+                description: 'Невелика колекція маршрутів для допитливих мандрівників.',
+
+                search: 'Пошук маршрутів...',
+                allCountries: 'Усі країни',
+
+                find: 'Пошук',
+                reset: 'Скинути',
+                newRoute: 'Новий маршрут',
+                countries: 'Країни',
+
+                duration: 'Тривалість',
+                difficulty: 'Складність',
+
+                edit: 'Редагувати',
+                delete: 'Видалити',
+
+                selectPage: 'Обрати сторінку',
+                deleteSelected: 'Видалити обрані',
+
+                noRoutes: 'Маршрутів не знайдено.',
+
+                prev: '← Назад',
+                next: 'Далі →',
+
+                show: 'Показати'
+            }
+        };
+
+        let currentTheme =
+            localStorage.getItem('atlas-theme') || 'light';
+
+        let currentLanguage =
+            localStorage.getItem('atlas-language') || 'en';
+
+        const themeToggle =
+            document.getElementById('themeToggle');
+
+        const languageToggle =
+            document.getElementById('languageToggle');
+
+        function applyTheme() {
+            document.documentElement.dataset.theme =
+                currentTheme;
+
+            themeToggle.textContent =
+                currentTheme === 'light'
+                    ? '☾'
+                    : '☀';
+        }
+
+        function applyLanguage() {
+            document.documentElement.lang =
+                currentLanguage === 'uk'
+                    ? 'uk'
+                    : 'en';
+
+            languageToggle.textContent =
+                currentLanguage === 'en'
+                    ? 'UA'
+                    : 'EN';
+
+            document
+                .querySelectorAll('[data-i18n]')
+                .forEach((element) => {
+                    const key =
+                        element.dataset.i18n;
+
+                    const value =
+                        translations[currentLanguage][key];
+
+                    if (value) {
+                        element.textContent = value;
+                    }
+                });
+
+            document
+                .querySelectorAll('[data-i18n-placeholder]')
+                .forEach((element) => {
+                    const key =
+                        element.dataset.i18nPlaceholder;
+
+                    const value =
+                        translations[currentLanguage][key];
+
+                    if (value) {
+                        element.placeholder = value;
+                    }
+                });
+        }
+
+        themeToggle.addEventListener('click', () => {
+            currentTheme =
+                currentTheme === 'light'
+                    ? 'dark'
+                    : 'light';
+
+            localStorage.setItem(
+                'atlas-theme',
+                currentTheme
+            );
+
+            applyTheme();
+        });
+
+        languageToggle.addEventListener('click', () => {
+            currentLanguage =
+                currentLanguage === 'en'
+                    ? 'uk'
+                    : 'en';
+
+            localStorage.setItem(
+                'atlas-language',
+                currentLanguage
+            );
+
+            applyLanguage();
+        });
+
+        applyTheme();
+        applyLanguage();
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

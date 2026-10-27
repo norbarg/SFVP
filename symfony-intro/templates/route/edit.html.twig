@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / Edit Route{% endblock %}
+
+{% block body %}
+    <section class="page-header">
+        <div class="eyebrow">
+            ATLAS / EDIT
+        </div>
+
+        <h1 class="page-title">
+            EDIT ROUTE
+        </h1>
+
+        <p class="page-description">
+            Update the selected travel route.
+        </p>
+    </section>
+
+    <div class="form-page">
+        {{ include('route/_form.html.twig', {
+            'button_label': 'Save changes'
+        }) }}
+
+        <div class="actions-row">
+            <a
+                href="{{ path('app_route_index') }}"
+                class="btn"
+            >
+                ← Back to routes
+            </a>
+
+            {{ include('route/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

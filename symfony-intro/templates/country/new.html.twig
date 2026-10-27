@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / New Country{% endblock %}
+
+{% block body %}
+    <section class="page-header">
+        <div class="eyebrow">
+            ATLAS / NEW
+        </div>
+
+        <h1 class="page-title">
+            NEW COUNTRY
+        </h1>
+
+        <p class="page-description">
+            Add a country to the ATLAS collection.
+        </p>
+    </section>
+
+    <div class="form-page">
+        {{ include('country/_form.html.twig') }}
+
+        <div class="actions-row">
+            <a
+                href="{{ path('app_country_index') }}"
+                class="btn"
+            >
+                ← Back to countries
+            </a>
+        </div>
+    </div>
+{% endblock %}

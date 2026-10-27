@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / Countries{% endblock %}
+
+{% block body %}
+    <section class="page-header">
+        <div class="eyebrow">
+            ATLAS / COUNTRIES
+        </div>
+
+        <h1 class="page-title">
+            COUNTRIES
+        </h1>
+
+        <p class="page-description">
+            Manage countries used in travel routes.
+        </p>
+    </section>
+
+    <div class="toolbar">
+        <a
+            href="{{ path('app_country_new') }}"
+            class="btn btn-dark"
+        >
+            + New country
+        </a>
+
+        <a
+            href="{{ path('app_route_index') }}"
+            class="btn"
+        >
+            Routes
+        </a>
+    </div>
+
+    {% if countries is empty %}
+        <div class="empty-state">
+            <p>No countries found.</p>
+        </div>
+    {% else %}
+        <table class="atlas-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Country</th>
+                    <th>Routes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for country in countries %}
+                    <tr>
+                        <td>{{ "%02d"|format(loop.index) }}</td>
+
+                        <td>
+                            <strong>{{ country.name }}</strong>
+                        </td>
+
+                        <td>
+                            {{ country.routes|length }}
+                        </td>
+
+                        <td>
+                            <div class="actions-row">
+                                <a
+                                    href="{{ path('app_country_show', {'id': country.id}) }}"
+                                    class="btn"
+                                >
+                                    View
+                                </a>
+
+                                <a
+                                    href="{{ path('app_country_edit', {'id': country.id}) }}"
+                                    class="btn"
+                                >
+                                    Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

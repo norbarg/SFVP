@@ -1,0 +1,15 @@
+<form
+    method="post"
+    action="{{ path('app_route_delete', {'id': route.id}) }}"
+    onsubmit="return confirm('Delete this route?');"
+>
+    <input
+        type="hidden"
+        name="_token"
+        value="{{ csrf_token('delete' ~ route.id) }}"
+    >
+
+    <button class="btn btn-danger">
+        Delete route
+    </button>
+</form>

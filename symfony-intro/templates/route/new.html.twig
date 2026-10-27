@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / New Route{% endblock %}
+
+{% block body %}
+    <section class="page-header">
+        <div class="eyebrow">
+            ATLAS / NEW
+        </div>
+
+        <h1 class="page-title">
+            NEW ROUTE
+        </h1>
+
+        <p class="page-description">
+            Add another route to the travel journal.
+        </p>
+    </section>
+
+    <div class="form-page">
+        {{ include('route/_form.html.twig') }}
+
+        <div class="actions-row">
+            <a
+                href="{{ path('app_route_index') }}"
+                class="btn"
+            >
+                ← Back to routes
+            </a>
+        </div>
+    </div>
+{% endblock %}

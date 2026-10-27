@@ -1,0 +1,382 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ATLAS / Routes{% endblock %}
+
+{% block body %}
+
+    <section class="atlas-intro">
+        <p
+            class="atlas-kicker"
+            data-i18n="kicker"
+        >
+            Curated travel routes
+        </p>
+
+        <h1 class="atlas-title">
+            ATLAS.
+        </h1>
+
+        <p
+            class="atlas-description"
+            data-i18n="description"
+        >
+            A small collection of routes for curious travelers.
+        </p>
+    </section>
+
+
+    <form
+        method="get"
+        action="{{ path('app_route_index') }}"
+        class="atlas-controls"
+    >
+
+        <div class="search-box">
+            <input
+                type="text"
+                name="q"
+                value="{{ search }}"
+                placeholder="Search routes..."
+                data-i18n-placeholder="search"
+            >
+
+            <button
+                type="submit"
+                data-i18n="find"
+            >
+                Search
+            </button>
+        </div>
+
+
+        <select name="country">
+            <option
+                value="0"
+                data-i18n="allCountries"
+            >
+                All countries
+            </option>
+
+            {% for country in countries %}
+                <option
+                    value="{{ country.id }}"
+                    {% if selectedCountry == country.id %}
+                        selected
+                    {% endif %}
+                >
+                    {{ country.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+
+        <select
+            name="sort"
+            class="sort-button"
+            onchange="this.form.submit()"
+        >
+            <option
+                value="asc"
+                {% if sort == 'asc' %}
+                    selected
+                {% endif %}
+            >
+                Duration ↑
+            </option>
+
+            <option
+                value="desc"
+                {% if sort == 'desc' %}
+                    selected
+                {% endif %}
+            >
+                Duration ↓
+            </option>
+        </select>
+
+
+        <input
+            type="hidden"
+            name="perPage"
+            value="{{ perPage }}"
+        >
+
+    </form>
+
+
+    <div class="bulk-actions">
+
+        <span>
+            {{ totalRoutes }} routes
+        </span>
+
+        <div>
+            <a
+                href="{{ path('app_route_index', {
+                    perPage: perPage
+                }) }}"
+                class="bulk-delete"
+                data-i18n="reset"
+            >
+                Reset
+            </a>
+        </div>
+
+    </div>
+
+
+    {% if routes is empty %}
+
+        <div class="empty-state">
+            <p data-i18n="noRoutes">
+                No routes found.
+            </p>
+        </div>
+
+    {% else %}
+
+        <div class="routes-grid">
+
+            {% for route in routes %}
+
+                <article class="route-card">
+
+                    <span class="route-number">
+                        {{ "%02d"|format(
+                            ((page - 1) * perPage) + loop.index
+                        ) }}
+                    </span>
+
+                    <p class="route-country">
+                        {{ route.country.name }}
+                    </p>
+
+
+                    <h2>
+                        {{ route.name }}
+                    </h2>
+
+
+                    <div class="route-meta">
+
+                        <div>
+                            <span data-i18n="duration">
+                                Duration
+                            </span>
+
+                            <strong>
+                                {{ route.duration }} days
+                            </strong>
+                        </div>
+
+
+                        <div>
+                            <span data-i18n="difficulty">
+                                Difficulty
+                            </span>
+
+                            <strong
+                                class="
+                                    difficulty
+                                    difficulty-{{ route.difficulty|lower }}
+                                "
+                            >
+                                {{ route.difficulty }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="route-actions">
+
+                        <a
+                            href="{{ path(
+                                'app_route_edit',
+                                {'id': route.id}
+                            ) }}"
+                        >
+                            <button
+                                type="button"
+                                data-i18n="edit"
+                            >
+                                Edit
+                            </button>
+                        </a>
+
+
+                        <form
+                            method="post"
+                            action="{{ path(
+                                'app_route_delete',
+                                {'id': route.id}
+                            ) }}"
+                            onsubmit="
+                                return confirm(
+                                    'Delete this route?'
+                                );
+                            "
+                        >
+                            <input
+                                type="hidden"
+                                name="_token"
+                                value="{{ csrf_token(
+                                    'delete' ~ route.id
+                                ) }}"
+                            >
+
+                            <button
+                                type="submit"
+                                data-i18n="delete"
+                            >
+                                Delete
+                            </button>
+                        </form>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <div class="pagination">
+
+        <div class="pagination-navigation">
+
+            {% if page > 1 %}
+
+                <a
+                    href="{{ path('app_route_index', {
+                        q: search,
+                        country: selectedCountry,
+                        sort: sort,
+                        perPage: perPage,
+                        page: page - 1
+                    }) }}"
+                >
+                    <button
+                        type="button"
+                        data-i18n="prev"
+                    >
+                        ← Prev
+                    </button>
+                </a>
+
+            {% else %}
+
+                <button
+                    type="button"
+                    disabled
+                    data-i18n="prev"
+                >
+                    ← Prev
+                </button>
+
+            {% endif %}
+
+
+            <span>
+                {{ "%02d"|format(page) }}
+                /
+                {{ "%02d"|format(totalPages) }}
+            </span>
+
+
+            {% if page < totalPages %}
+
+                <a
+                    href="{{ path('app_route_index', {
+                        q: search,
+                        country: selectedCountry,
+                        sort: sort,
+                        perPage: perPage,
+                        page: page + 1
+                    }) }}"
+                >
+                    <button
+                        type="button"
+                        data-i18n="next"
+                    >
+                        Next →
+                    </button>
+                </a>
+
+            {% else %}
+
+                <button
+                    type="button"
+                    disabled
+                    data-i18n="next"
+                >
+                    Next →
+                </button>
+
+            {% endif %}
+
+        </div>
+
+
+        <form
+            method="get"
+            action="{{ path('app_route_index') }}"
+            class="per-page"
+        >
+
+            <input
+                type="hidden"
+                name="q"
+                value="{{ search }}"
+            >
+
+            <input
+                type="hidden"
+                name="country"
+                value="{{ selectedCountry }}"
+            >
+
+            <input
+                type="hidden"
+                name="sort"
+                value="{{ sort }}"
+            >
+
+            <span data-i18n="show">
+                Show
+            </span>
+
+            <select
+                name="perPage"
+                onchange="this.form.submit()"
+            >
+                <option
+                    value="5"
+                    {% if perPage == 5 %}selected{% endif %}
+                >
+                    5
+                </option>
+
+                <option
+                    value="10"
+                    {% if perPage == 10 %}selected{% endif %}
+                >
+                    10
+                </option>
+
+                <option
+                    value="20"
+                    {% if perPage == 20 %}selected{% endif %}
+                >
+                    20
+                </option>
+            </select>
+
+        </form>
+
+    </div>
+
+{% endblock %}

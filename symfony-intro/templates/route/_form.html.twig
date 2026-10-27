@@ -1,0 +1,35 @@
+{{ form_start(form) }}
+
+<div class="form-card">
+    {{ form_errors(form) }}
+
+    <div>
+        {{ form_label(form.name, 'Route name') }}
+        {{ form_widget(form.name) }}
+        {{ form_errors(form.name) }}
+    </div>
+
+    <div>
+        {{ form_label(form.country, 'Country') }}
+        {{ form_widget(form.country) }}
+        {{ form_errors(form.country) }}
+    </div>
+
+    <div>
+        {{ form_label(form.duration, 'Duration') }}
+        {{ form_widget(form.duration) }}
+        {{ form_errors(form.duration) }}
+    </div>
+
+    <div>
+        {{ form_label(form.difficulty, 'Difficulty') }}
+        {{ form_widget(form.difficulty) }}
+        {{ form_errors(form.difficulty) }}
+    </div>
+
+    <button class="btn btn-dark">
+        {{ button_label|default('Save route') }}
+    </button>
+</div>
+
+{{ form_end(form) }}
