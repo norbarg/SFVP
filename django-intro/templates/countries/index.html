@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}ATLAS / Countries{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        ATLAS / COUNTRIES
+    </p>
+
+    <h1 class="page-title">
+        COUNTRIES
+    </h1>
+
+    <p class="page-description">
+        Manage countries used by ATLAS travel routes.
+    </p>
+
+</section>
+
+
+<div class="toolbar">
+
+    <a
+        href="{% url 'countries_new' %}"
+        class="btn btn-dark"
+    >
+        + New country
+    </a>
+
+    <a
+        href="{% url 'routes_index' %}"
+        class="btn"
+    >
+        Routes
+    </a>
+
+</div>
+
+
+<table class="atlas-table">
+
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Country</th>
+            <th>Routes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+
+    <tbody>
+
+        {% for country in countries %}
+
+            <tr>
+
+                <td>
+                    {{ country.id }}
+                </td>
+
+                <td>
+                    <strong>
+                        {{ country.name }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ country.routes.count }}
+                </td>
+
+                <td>
+
+                    <div class="table-actions">
+
+                        <a
+                            href="{% url 'countries_show' country.id %}"
+                            class="btn"
+                        >
+                            View
+                        </a>
+
+                        <a
+                            href="{% url 'countries_edit' country.id %}"
+                            class="btn"
+                        >
+                            Edit
+                        </a>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="4">
+                    No countries found.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if isEdit %}
+        ATLAS / Edit country
+    {% else %}
+        ATLAS / New country
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        {% if isEdit %}
+            ATLAS / EDIT
+        {% else %}
+            ATLAS / NEW
+        {% endif %}
+    </p>
+
+    <h1 class="page-title">
+        {% if isEdit %}
+            EDIT COUNTRY
+        {% else %}
+            NEW COUNTRY
+        {% endif %}
+    </h1>
+
+</section>
+
+
+<div class="form-page">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="form-errors">
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+
+        <div class="form-card">
+
+            <div>
+
+                <label for="{{ form.name.id_for_label }}">
+                    Country name
+                </label>
+
+                {{ form.name }}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-dark"
+            >
+                {% if isEdit %}
+                    Save changes
+                {% else %}
+                    Create country
+                {% endif %}
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <div class="actions-row">
+
+        <a
+            href="{% url 'countries_index' %}"
+            class="btn"
+        >
+            ← Back
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

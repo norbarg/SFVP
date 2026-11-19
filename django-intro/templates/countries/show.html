@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}ATLAS / Country{% endblock %}
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        ATLAS / COUNTRY
+    </p>
+
+    <h1 class="page-title">
+        {{ country.name }}
+    </h1>
+
+</section>
+
+
+<div class="detail-card">
+
+    <div class="detail-row">
+
+        <div class="detail-label">
+            ID
+        </div>
+
+        <div class="detail-value">
+            {{ country.id }}
+        </div>
+
+    </div>
+
+
+    <div class="detail-row">
+
+        <div class="detail-label">
+            Country
+        </div>
+
+        <div class="detail-value">
+            {{ country.name }}
+        </div>
+
+    </div>
+
+
+    <div class="detail-row">
+
+        <div class="detail-label">
+            Routes
+        </div>
+
+        <div class="detail-value">
+            {{ country.routes.count }}
+        </div>
+
+    </div>
+
+</div>
+
+
+{% if routes %}
+
+    <div class="country-routes">
+
+        <h2>
+            Routes
+        </h2>
+
+        {% for route in routes %}
+
+            <a
+                href="{% url 'routes_show' route.id %}"
+                class="country-route-item"
+            >
+
+                <span>
+                    {{ route.name }}
+                </span>
+
+                <small>
+                    {{ route.duration }} days
+                </small>
+
+            </a>
+
+        {% endfor %}
+
+    </div>
+
+{% endif %}
+
+
+<div class="actions-row">
+
+    <a
+        href="{% url 'countries_index' %}"
+        class="btn"
+    >
+        ← Back
+    </a>
+
+    <a
+        href="{% url 'countries_edit' country.id %}"
+        class="btn btn-dark"
+    >
+        Edit
+    </a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if isEdit %}
+        ATLAS / Edit route
+    {% else %}
+        ATLAS / New route
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        {% if isEdit %}
+            ATLAS / EDIT
+        {% else %}
+            ATLAS / NEW
+        {% endif %}
+    </p>
+
+    <h1 class="page-title">
+        {% if isEdit %}
+            EDIT ROUTE
+        {% else %}
+            NEW ROUTE
+        {% endif %}
+    </h1>
+
+    <p class="page-description">
+        {% if isEdit %}
+            Update the selected travel route.
+        {% else %}
+            Add a new travel route to the ATLAS collection.
+        {% endif %}
+    </p>
+
+</section>
+
+
+<div class="form-page">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {% if form.errors %}
+
+            <div class="form-errors">
+                {{ form.errors }}
+            </div>
+
+        {% endif %}
+
+
+        <div class="form-card">
+
+            <div>
+                <label for="{{ form.name.id_for_label }}">
+                    Route name
+                </label>
+
+                {{ form.name }}
+            </div>
+
+
+            <div>
+                <label for="{{ form.country.id_for_label }}">
+                    Country
+                </label>
+
+                {{ form.country }}
+            </div>
+
+
+            <div>
+                <label for="{{ form.duration.id_for_label }}">
+                    Duration
+                </label>
+
+                {{ form.duration }}
+            </div>
+
+
+            <div>
+                <label for="{{ form.difficulty.id_for_label }}">
+                    Difficulty
+                </label>
+
+                {{ form.difficulty }}
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-dark"
+            >
+                {% if isEdit %}
+                    Save changes
+                {% else %}
+                    Create route
+                {% endif %}
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <div class="actions-row">
+
+        <a
+            href="{% url 'routes_index' %}"
+            class="btn"
+        >
+            ← Back
+        </a>
+
+        {% if isEdit %}
+
+            <form
+                method="post"
+                action="{% url 'routes_delete' route.id %}"
+                onsubmit="return Modal.confirm(
+                    'Delete route',
+                    'Delete {{ route.name|escapejs }}?',
+                    this
+                );"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                >
+                    Delete
+                </button>
+
+            </form>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

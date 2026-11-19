@@ -1,0 +1,138 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}ATLAS{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'atlas/app.css' %}">
+</head>
+
+<body>
+
+<div class="atlas-layout">
+
+    <aside class="atlas-sidebar">
+
+        <div class="sidebar-actions">
+
+            <a
+                href="{% url 'routes_new' %}"
+                class="sidebar-icon-button sidebar-add"
+                data-tooltip="New route"
+            >
+                +
+            </a>
+
+            <a
+                href="{% url 'routes_index' %}"
+                class="sidebar-icon-button"
+                data-tooltip="Routes"
+            >
+                R
+            </a>
+
+            <a
+                href="{% url 'countries_index' %}"
+                class="sidebar-icon-button"
+                data-tooltip="Countries"
+            >
+                C
+            </a>
+
+        </div>
+
+        <div class="sidebar-actions">
+
+            <button
+                type="button"
+                class="sidebar-icon-button"
+                id="themeToggle"
+                data-tooltip="Theme"
+            >
+                ☾
+            </button>
+
+            <button
+                type="button"
+                class="sidebar-icon-button"
+                id="languageToggle"
+                data-tooltip="Language"
+            >
+                UA
+            </button>
+
+            <div class="sidebar-mini-mark">
+                A
+            </div>
+
+        </div>
+
+    </aside>
+
+    <main class="atlas">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash {% if message.tags == 'error' %}flash-error{% else %}flash-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+</div>
+
+
+<div id="modal" class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-mark">
+            ATLAS / CONFIRM
+        </div>
+
+        <h3 id="modal-title">
+            Confirm
+        </h3>
+
+        <div
+            id="modal-body"
+            class="modal-content"
+        ></div>
+
+        <div class="modal-actions">
+
+            <button
+                type="button"
+                class="modal-cancel"
+                onclick="Modal.close()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="modal-confirm"
+                id="modal-confirm"
+            >
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="{% static 'atlas/app.js' %}"></script>
+
+</body>
+</html>
